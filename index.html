@@ -8,9 +8,10 @@
         :root {
             --primary: #0077be; /* Ocean Blue */
             --primary-dark: #005c93;
-            --secondary: #6c757d; /* Grey for secondary actions */
+            --secondary: #6c757d; /* Grey */
             --accent: #ffca28; /* Sun Yellow */
-            --bg: #eef9ff; /* Very light blue bg */
+            --challenge: #8e44ad; /* Purple for Challenge Mode */
+            --bg: #eef9ff; 
             --text: #333;
             --success: #2ecc71;
             --error: #e74c3c;
@@ -41,7 +42,7 @@
             box-shadow: 0 10px 30px rgba(0, 119, 190, 0.15);
             overflow: hidden;
             position: relative;
-            min-height: 500px;
+            min-height: 550px;
             display: flex;
             flex-direction: column;
         }
@@ -54,7 +55,6 @@
             text-align: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             z-index: 10;
-            position: relative;
         }
 
         h1 { margin: 0; font-size: 1.4rem; font-weight: 600; }
@@ -63,7 +63,7 @@
         /* Screens */
         .screen {
             padding: 20px;
-            display: none; /* Hidden by default */
+            display: none; 
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -82,7 +82,7 @@
             flex-direction: column;
             width: 100%;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
         }
 
         .mode-card {
@@ -90,9 +90,9 @@
             border: 2px solid #e1e8ed;
             border-left: 5px solid var(--primary);
             border-radius: 12px;
-            padding: 25px;
+            padding: 20px;
             width: 100%;
-            max-width: 350px;
+            max-width: 400px;
             cursor: pointer;
             text-align: left;
             display: flex;
@@ -107,12 +107,25 @@
             background-color: #f8fbfe;
         }
 
-        .mode-icon { font-size: 1.8rem; margin-right: 15px; }
+        /* Special style for challenge card */
+        .mode-card.challenge-card {
+            border-left-color: var(--challenge);
+            background: #fbf7fd;
+        }
+        .mode-card.challenge-card:hover {
+            border-color: var(--challenge);
+            background: #f4ecf7;
+        }
+        .mode-card.challenge-card .mode-title {
+            color: var(--challenge);
+        }
+
+        .mode-icon { font-size: 1.8rem; margin-right: 15px; min-width: 40px; text-align: center;}
         .mode-info { flex: 1; }
         .mode-title { font-weight: bold; font-size: 1.1rem; color: var(--primary-dark); margin-bottom: 4px; }
         .mode-desc { font-size: 0.85rem; color: #666; }
 
-        /* Quiz Screen Layout Refinements */
+        /* Quiz Screen Layout */
         .progress-bar-bg {
             width: 100%;
             height: 6px;
@@ -252,7 +265,7 @@
             box-shadow: 0 0 0 4px rgba(0, 119, 190, 0.1);
         }
 
-        /* Common Buttons */
+        /* Buttons */
         .btn-primary {
             background: var(--primary);
             color: white;
@@ -306,7 +319,6 @@
         .score-circle {
             width: 130px;
             height: 130px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary)); /* Fallback logic handled by CSS var, basically nice blue */
             background: var(--primary);
             color: white;
             border-radius: 50%;
@@ -351,14 +363,14 @@
 
     <!-- START SCREEN -->
     <div id="start-screen" class="screen active">
-        <h3 style="margin-bottom: 25px; color: #555;">Choose your challenge:</h3>
+        <h3 style="margin-bottom: 20px; color: #555;">Choose your challenge:</h3>
         
         <div class="mode-container">
             <div class="mode-card" onclick="startGame('mc')">
                 <span class="mode-icon">🅰️</span>
                 <div class="mode-info">
                     <div class="mode-title">Multiple Choice</div>
-                    <div class="mode-desc">Select the correct option. Good for quick review.</div>
+                    <div class="mode-desc">Standard quiz. Good for quick review.</div>
                 </div>
             </div>
 
@@ -366,7 +378,16 @@
                 <span class="mode-icon">⌨️</span>
                 <div class="mode-info">
                     <div class="mode-title">Fill in the Blank</div>
-                    <div class="mode-desc">Type the answer. A harder challenge for experts!</div>
+                    <div class="mode-desc">Type the answer. Complete the full set!</div>
+                </div>
+            </div>
+
+            <!-- New Challenge Mode -->
+            <div class="mode-card challenge-card" onclick="startGame('challenge')">
+                <span class="mode-icon">🏆</span>
+                <div class="mode-info">
+                    <div class="mode-title">10 Question Challenge</div>
+                    <div class="mode-desc">Randomized questions. Fill in the blank. Can you get 10/10?</div>
                 </div>
             </div>
         </div>
@@ -415,51 +436,94 @@
 </div>
 
 <script>
-    // --- QUESTION BANK ---
+    // --- EXPANDED QUESTION BANK ---
+    // Includes variations of questions by swapping keywords
     const questionBank = [
-        // 2.1 Water Cycle
+        // 2.1 Water Cycle (Originals + Swaps)
         { q: "The three states of water are solid, liquid, and __________.", a: "gas", opt: ["plasma", "vapour", "fluid", "gas"] },
-        { q: "__________ is the process where a solid changes to a liquid.", a: "melting", opt: ["freezing", "melting", "evaporation", "condensation"] },
-        { q: "The freezing point of water is __________°C.", a: "0", opt: ["100", "0", "-10", "32"] },
-        { q: "During boiling, liquid water changes to water vapour at __________°C.", a: "100", opt: ["0", "50", "100", "212"] },
-        { q: "__________ occurs at any temperature and involves absorbing energy.", a: "evaporation", opt: ["boiling", "melting", "evaporation", "freezing"] },
-        { q: "In the water cycle, water vapour rises and cools to form __________.", a: "clouds", opt: ["rain", "clouds", "oceans", "rivers"] },
-        { q: "Snow and __________ are forms of solid precipitation.", a: "hail", opt: ["rain", "hail", "dew", "fog"] },
-        { q: "Evaporation is faster on a __________ and windy day.", a: "hot", opt: ["cold", "wet", "rainy", "hot"] },
-        { q: "Condensation __________ energy (heat).", a: "releases", opt: ["absorbs", "releases", "creates", "destroys"] },
-        { q: "Water in seas and rivers absorbs energy from the __________.", a: "sun", opt: ["moon", "earth", "wind", "sun"] },
+        { q: "Water exists in three states: solid, __________, and gas.", a: "liquid", opt: ["plasma", "liquid", "ice", "steam"] },
+        { q: "Water exists in three states: __________, liquid, and gas.", a: "solid", opt: ["plasma", "solid", "fluid", "steam"] },
         
-        // 2.2 Dissolving
+        { q: "__________ is the process where a solid changes to a liquid.", a: "melting", opt: ["freezing", "melting", "evaporation", "condensation"] },
+        { q: "Melting is the process where a __________ changes to a liquid.", a: "solid", opt: ["gas", "solid", "plasma", "vapour"] },
+        
+        { q: "The freezing point of water is __________°C.", a: "0", opt: ["100", "0", "-10", "32"] },
+        { q: "Water freezes at __________ degrees Celsius.", a: "0", opt: ["100", "0", "-10", "32"] },
+        
+        { q: "During boiling, liquid water changes to water vapour at __________°C.", a: "100", opt: ["0", "50", "100", "212"] },
+        { q: "The boiling point of water is __________°C.", a: "100", opt: ["0", "50", "100", "212"] },
+        
+        { q: "__________ occurs at any temperature and involves absorbing energy.", a: "evaporation", opt: ["boiling", "melting", "evaporation", "freezing"] },
+        { q: "Evaporation involves __________ energy.", a: "absorbing", opt: ["releasing", "absorbing", "creating", "destroying"] },
+        
+        { q: "In the water cycle, water vapour rises and cools to form __________.", a: "clouds", opt: ["rain", "clouds", "oceans", "rivers"] },
+        { q: "Clouds are formed when water vapour __________ and condenses.", a: "cools", opt: ["heats", "cools", "freezes", "melts"] },
+        
+        { q: "Snow and __________ are forms of solid precipitation.", a: "hail", opt: ["rain", "hail", "dew", "fog"] },
+        { q: "Rain, snow, and hail are forms of __________.", a: "precipitation", opt: ["evaporation", "precipitation", "condensation", "transpiration"] },
+        
+        { q: "Evaporation is faster on a __________ and windy day.", a: "hot", opt: ["cold", "wet", "rainy", "hot"] },
+        { q: "Evaporation is __________ when it is windy.", a: "faster", opt: ["slower", "stopped", "faster", "unchanged"] },
+        
+        { q: "Condensation __________ energy (heat).", a: "releases", opt: ["absorbs", "releases", "creates", "destroys"] },
+        { q: "When steam turns back into water, it __________ heat energy.", a: "releases", opt: ["absorbs", "releases", "holds", "needs"] },
+        
+        { q: "Water in seas and rivers absorbs energy from the __________.", a: "sun", opt: ["moon", "earth", "wind", "sun"] },
+
+        // 2.2 Dissolving (Originals + Swaps)
         { q: "A __________ is a mixture of solute and solvent.", a: "solution", opt: ["mixture", "solution", "suspension", "liquid"] },
+        { q: "A solution is made of a solute and a __________.", a: "solvent", opt: ["mixture", "solid", "solvent", "residue"] },
+        
         { q: "In salt water, the salt is the __________.", a: "solute", opt: ["solvent", "solution", "solute", "residue"] },
+        { q: "In salt water, the water is the __________.", a: "solvent", opt: ["solute", "solution", "solvent", "mixture"] },
+        
         { q: "Water is known as a __________ solvent because it dissolves many substances.", a: "universal", opt: ["weak", "universal", "poor", "solid"] },
         { q: "Substances like sugar are __________ in water.", a: "soluble", opt: ["insoluble", "hard", "soluble", "resistant"] },
         { q: "Sand is __________ in water.", a: "insoluble", opt: ["soluble", "melted", "insoluble", "dissolved"] },
+        
         { q: "Crushing a solid __________ its surface area.", a: "increases", opt: ["decreases", "increases", "removes", "destroys"] },
+        { q: "To make a solid dissolve faster, we can __________ it.", a: "crush", opt: ["freeze", "crush", "dry", "compress"] },
+        
         { q: "Stirring a solution __________ the dissolving rate.", a: "increases", opt: ["decreases", "stops", "increases", "slows"] },
-        { q: "The __________ of a substance tells us how much of it can dissolve in a specific amount of solvent.", a: "solubility", opt: ["density", "volume", "solubility", "mass"] },
-        { q: "A solution that cannot dissolve any more solute is called __________.", a: "saturated", opt: ["unsaturated", "saturated", "dilute", "pure"] },
 
-        // 2.3 Water Purification
+        // 2.3 Water Purification (Originals + Swaps)
         { q: "Sedimentation removes __________ impurities that are heavy.", a: "insoluble", opt: ["soluble", "insoluble", "invisible", "chemical"] },
+        { q: "__________ allows heavy impurities to sink to the bottom.", a: "sedimentation", opt: ["filtration", "sedimentation", "distillation", "chlorination"] },
+        
         { q: "During filtration, the liquid that passes through is called the __________.", a: "filtrate", opt: ["residue", "filtrate", "sediment", "distillate"] },
+        { q: "In filtration, the clean liquid is the filtrate, and the solid is the __________.", a: "residue", opt: ["filtrate", "residue", "solution", "product"] },
+        
         { q: "The solid trapped on the filter paper is called the __________.", a: "residue", opt: ["filtrate", "residue", "solution", "product"] },
+        
         { q: "Distillation involves boiling followed by __________.", a: "condensation", opt: ["evaporation", "freezing", "condensation", "melting"] },
+        { q: "__________ involves boiling water to steam and then condensing it.", a: "distillation", opt: ["filtration", "sedimentation", "distillation", "chlorination"] },
+        
         { q: "Distillation removes __________ impurities and microorganisms.", a: "soluble", opt: ["insoluble", "large", "soluble", "heavy"] },
         { q: "__________ water is free from dissolved minerals and bacteria.", a: "distilled", opt: ["tap", "river", "distilled", "sea"] },
         
-        // 2.4 Further Treatment
+        // 2.4 Further Treatment (Originals + Swaps)
         { q: "__________ is added to swimming pools to kill bacteria.", a: "chlorine", opt: ["fluoride", "chlorine", "salt", "sugar"] },
+        { q: "Chlorine is added to water to kill __________.", a: "bacteria", opt: ["fish", "algae", "bacteria", "viruses"] },
+        
         { q: "__________ is an alternative to chlorine that does not leave a smell.", a: "ozone", opt: ["fluoride", "alum", "ozone", "nitrogen"] },
         { q: "UV light is used to kill __________ in water.", a: "microorganisms", opt: ["chemicals", "dust", "microorganisms", "minerals"] },
+        
         { q: "Adding __________ to water helps prevent tooth decay.", a: "fluoride", opt: ["calcium", "chloride", "fluoride", "iron"] },
+        { q: "Fluoride is added to water to prevent __________ decay.", a: "tooth", opt: ["bone", "tooth", "pipe", "brain"] },
 
-        // 2.6 Conservation & Pollution
+        // 2.6 Conservation & Pollution (Originals + Swaps)
         { q: "About __________% of the Earth's surface is covered by water.", a: "70", opt: ["50", "70", "90", "30"] },
+        { q: "Water covers about 70% of the Earth's __________.", a: "surface", opt: ["core", "surface", "atmosphere", "land"] },
+        
         { q: "Only about __________% of water on Earth is fresh water.", a: "2.5", opt: ["50", "10", "2.5", "0.1"] },
+        { q: "Most water on Earth is salt water; only 2.5% is __________ water.", a: "fresh", opt: ["fresh", "clean", "drinkable", "pure"] },
+        
         { q: "We can save water by using a washing machine with a Grade __________ efficiency label.", a: "1", opt: ["1", "5", "3", "10"] },
+        
         { q: "Too much fertiliser in water can cause an __________ bloom.", a: "algal", opt: ["fish", "algal", "ocean", "oil"] },
         { q: "Red tides are caused by the rapid growth of __________.", a: "algae", opt: ["bacteria", "fish", "coral", "algae"] },
+        { q: "Algal blooms use up __________ in the water, harming fish.", a: "oxygen", opt: ["salt", "oxygen", "nitrogen", "food"] },
+        
         { q: "Oil spills prevent __________ from dissolving in seawater, suffocating fish.", a: "oxygen", opt: ["salt", "oxygen", "nitrogen", "food"] }
     ];
 
@@ -468,26 +532,47 @@
     let currentQuestionIndex = 0;
     let score = 0;
     let shuffledQuestions = [];
-    let isAnswered = false; // Prevent double clicking
+    let isAnswered = false; 
 
     function startGame(mode) {
-        currentMode = mode;
+        let isChallenge = false;
+        
+        // Reset state
         score = 0;
         currentQuestionIndex = 0;
         isAnswered = false;
 
-        // Shuffle questions
+        // Shuffle all available questions
         shuffledQuestions = [...questionBank].sort(() => Math.random() - 0.5);
 
-        // Switch Screens (Hide all, show quiz)
+        // Logic for different modes
+        if (mode === 'challenge') {
+            isChallenge = true;
+            currentMode = 'input'; // Challenge forces input mode
+            shuffledQuestions = shuffledQuestions.slice(0, 10); // Take only 10
+        } else {
+            currentMode = mode;
+        }
+
+        // Switch Screens
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById('quiz-screen').classList.add('active');
 
-        // Setup Input UI if needed
+        // Setup UI based on input vs MC
         const inputContainer = document.getElementById('input-container');
         const optionsGrid = document.getElementById('options-grid');
+        const questionNum = document.querySelector('.question-number');
         
-        if (mode === 'input') {
+        // FIX: Ensure the inner HTML structure exists for q-num in both modes
+        if (isChallenge) {
+            questionNum.style.backgroundColor = "var(--challenge)";
+            questionNum.innerHTML = 'Challenge #<span id="q-num">1</span>';
+        } else {
+            questionNum.style.backgroundColor = "var(--primary)";
+            questionNum.innerHTML = 'Question <span id="q-num">1</span>';
+        }
+
+        if (currentMode === 'input') {
             inputContainer.style.display = 'block';
             optionsGrid.style.display = 'none';
             
@@ -510,15 +595,19 @@
         isAnswered = false;
         const qData = shuffledQuestions[currentQuestionIndex];
         
-        // Update Text & Number
+        // Update Text
         document.getElementById('question-box').innerText = qData.q;
-        document.getElementById('q-num').innerText = currentQuestionIndex + 1;
+        
+        // Safe update for question number
+        const qNumSpan = document.getElementById('q-num');
+        if (qNumSpan) {
+            qNumSpan.innerText = currentQuestionIndex + 1;
+        }
         
         // Reset Feedback
         const feedbackMsg = document.getElementById('feedback-msg');
         feedbackMsg.innerText = "";
         feedbackMsg.style.color = "inherit";
-        feedbackMsg.style.background = "transparent";
         document.getElementById('next-btn').style.display = "none";
 
         // Update Progress Bar
@@ -530,7 +619,6 @@
             const grid = document.getElementById('options-grid');
             grid.innerHTML = '';
             
-            // Shuffle options
             let options = [...qData.opt].sort(() => Math.random() - 0.5);
 
             options.forEach(opt => {
@@ -573,7 +661,6 @@
             showFeedback(false, `Oops! The correct answer is: ${qData.a}`);
         }
 
-        // Disable all buttons
         buttons.forEach(b => b.disabled = true);
         document.getElementById('next-btn').style.display = 'inline-block';
     }
@@ -583,7 +670,7 @@
         
         const input = document.getElementById('answer-input');
         const userVal = input.value.trim();
-        if (!userVal) return; // Don't submit empty
+        if (!userVal) return;
 
         isAnswered = true;
         input.disabled = true;
@@ -592,11 +679,11 @@
         if (userVal.toLowerCase() === qData.a.toLowerCase()) {
             score++;
             input.style.borderColor = "var(--success)";
-            input.style.backgroundColor = "#e8f8f5"; // light green
+            input.style.backgroundColor = "#e8f8f5"; 
             showFeedback(true, "Spelled correctly! Well done.");
         } else {
             input.style.borderColor = "var(--error)";
-            input.style.backgroundColor = "#fdedec"; // light red
+            input.style.backgroundColor = "#fdedec"; 
             showFeedback(false, `Incorrect. The answer is: ${qData.a}`);
         }
         document.getElementById('next-btn').style.display = 'inline-block';
@@ -606,7 +693,6 @@
         const fb = document.getElementById('feedback-msg');
         fb.innerText = text;
         fb.style.color = isCorrect ? "var(--success)" : "var(--error)";
-        // fb.style.backgroundColor = isCorrect ? "#e8f8f5" : "#fdedec";
     }
 
     function nextQuestion() {
@@ -656,7 +742,13 @@
     }
 
     function restartGame() {
-        startGame(currentMode);
+        // If restarting from end screen, how do we know which mode?
+        // We can check if shuffledQuestions length was 10 and currentMode is input
+        if (shuffledQuestions.length === 10 && currentMode === 'input') {
+             startGame('challenge');
+        } else {
+             startGame(currentMode);
+        }
     }
 </script>
 
