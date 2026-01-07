@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S1 Science: Water Unit Quiz</title>
+    <style>
+        :root {
+            --primary: #0077be; /* Ocean Blue */
+            --primary-dark: #005c93;
+            --secondary: #6c757d; /* Grey for secondary actions */
+            --accent: #ffca28; /* Sun Yellow */
+            --bg: #eef9ff; /* Very light blue bg */
+            --text: #333;
+            --success: #2ecc71;
+            --error: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .app-container {
+            background: white;
+            width: 100%;
+            max-width: 650px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 119, 190, 0.15);
+            overflow: hidden;
+            position: relative;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Headers */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
+            position: relative;
+        }
+
+        h1 { margin: 0; font-size: 1.4rem; font-weight: 600; }
+        h2 { margin: 4px 0 0; font-size: 0.9rem; opacity: 0.9; font-weight: normal; }
+
+        /* Screens */
+        .screen {
+            padding: 20px;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            width: 100%;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Start Screen */
+        .mode-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .mode-card {
+            background: white;
+            border: 2px solid #e1e8ed;
+            border-left: 5px solid var(--primary);
+            border-radius: 12px;
+            padding: 25px;
+            width: 100%;
+            max-width: 350px;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .mode-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,119,190,0.15);
+            background-color: #f8fbfe;
+        }
+
+        .mode-icon { font-size: 1.8rem; margin-right: 15px; }
+        .mode-info { flex: 1; }
+        .mode-title { font-weight: bold; font-size: 1.1rem; color: var(--primary-dark); margin-bottom: 4px; }
+        .mode-desc { font-size: 0.85rem; color: #666; }
+
+        /* Quiz Screen Layout Refinements */
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: #f1f3f5;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .quiz-header {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+
+        .btn-exit {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 5px 10px;
+        }
+        
+        .btn-exit:hover {
+            color: var(--error);
+            background: #fff5f5;
+            border-radius: 5px;
+        }
+
+        .question-wrapper {
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            width: 100%;
+            margin-bottom: 25px;
+            border: 1px solid #eee;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            position: relative;
+        }
+
+        .question-number {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .question-box {
+            font-size: 1.25rem;
+            text-align: center;
+            line-height: 1.5;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* MC Options */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            width: 100%;
+        }
+
+        @media (min-width: 500px) {
+            .options-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .btn-option {
+            background: white;
+            border: 2px solid #e9ecef;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 500;
+            color: #495057;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+
+        .btn-option:hover:not(:disabled) {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #f8fbfe;
+            transform: translateY(-1px);
+        }
+
+        .btn-option.correct {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+            box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+        }
+
+        .btn-option.incorrect {
+            background: var(--error);
+            border-color: var(--error);
+            color: white;
+            opacity: 0.7;
+        }
+
+        /* Input Mode */
+        .input-wrapper {
+            width: 100%;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 16px;
+            font-size: 1.2rem;
+            border: 2px solid #ced4da;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            outline: none;
+            background: #fff;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(0, 119, 190, 0.1);
+        }
+
+        /* Common Buttons */
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 119, 190, 0.2);
+            min-width: 140px;
+        }
+
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+        .btn-secondary {
+            background: white;
+            color: #666;
+            border: 2px solid #ddd;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            min-width: 140px;
+        }
+
+        .btn-secondary:hover { background: #f8f9fa; border-color: #bbb; color: #333; }
+
+        /* Feedback & Controls */
+        .feedback-area {
+            min-height: 80px;
+            margin-top: 15px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .feedback-msg {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            padding: 5px 15px;
+            border-radius: 5px;
+        }
+
+        /* End Screen */
+        .score-circle {
+            width: 130px;
+            height: 130px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary)); /* Fallback logic handled by CSS var, basically nice blue */
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(0, 119, 190, 0.25);
+            border: 4px solid rgba(255,255,255,0.2);
+        }
+
+        .score-number { font-size: 3rem; font-weight: 700; line-height: 1; }
+        .score-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; opacity: 0.9; }
+
+        .action-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <h1>💧 Water Unit Review</h1>
+        <h2>S1 Science</h2>
+    </header>
+
+    <div class="progress-bar-bg">
+        <div id="progress-bar" class="progress-bar-fill"></div>
+    </div>
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="screen active">
+        <h3 style="margin-bottom: 25px; color: #555;">Choose your challenge:</h3>
+        
+        <div class="mode-container">
+            <div class="mode-card" onclick="startGame('mc')">
+                <span class="mode-icon">🅰️</span>
+                <div class="mode-info">
+                    <div class="mode-title">Multiple Choice</div>
+                    <div class="mode-desc">Select the correct option. Good for quick review.</div>
+                </div>
+            </div>
+
+            <div class="mode-card" onclick="startGame('input')">
+                <span class="mode-icon">⌨️</span>
+                <div class="mode-info">
+                    <div class="mode-title">Fill in the Blank</div>
+                    <div class="mode-desc">Type the answer. A harder challenge for experts!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div id="quiz-screen" class="screen">
+        <div class="quiz-header">
+            <button class="btn-exit" onclick="goToMenu()">❌ Exit to Menu</button>
+        </div>
+
+        <div class="question-wrapper">
+            <div class="question-number">Question <span id="q-num">1</span></div>
+            <div id="question-box" class="question-box"></div>
+        </div>
+
+        <!-- Container for MC Buttons -->
+        <div id="options-grid" class="options-grid"></div>
+
+        <!-- Container for Typing Input -->
+        <div id="input-container" class="input-wrapper" style="display:none;">
+            <input type="text" id="answer-input" placeholder="Type answer here..." autocomplete="off">
+            <button class="btn-primary" onclick="checkInputAnswer()">Submit Answer</button>
+        </div>
+
+        <div class="feedback-area">
+            <div id="feedback-msg" class="feedback-msg"></div>
+            <button id="next-btn" class="btn-primary" style="display: none;" onclick="nextQuestion()">Next Question ➡</button>
+        </div>
+    </div>
+
+    <!-- END SCREEN -->
+    <div id="end-screen" class="screen">
+        <div class="score-circle">
+            <span id="final-score" class="score-number">0</span>
+            <span class="score-label">Points</span>
+        </div>
+        <h3 id="final-message" style="margin: 10px 0; font-size: 1.5rem; color: var(--primary-dark);">Well Done!</h3>
+        <p id="final-details" style="color: #666; margin-bottom: 30px; text-align: center; max-width: 80%;"></p>
+        
+        <div class="action-group">
+            <button class="btn-secondary" onclick="goToMenu()">🏠 Menu</button>
+            <button class="btn-primary" onclick="restartGame()">🔄 Play Again</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- QUESTION BANK ---
+    const questionBank = [
+        // 2.1 Water Cycle
+        { q: "The three states of water are solid, liquid, and __________.", a: "gas", opt: ["plasma", "vapour", "fluid", "gas"] },
+        { q: "__________ is the process where a solid changes to a liquid.", a: "melting", opt: ["freezing", "melting", "evaporation", "condensation"] },
+        { q: "The freezing point of water is __________°C.", a: "0", opt: ["100", "0", "-10", "32"] },
+        { q: "During boiling, liquid water changes to water vapour at __________°C.", a: "100", opt: ["0", "50", "100", "212"] },
+        { q: "__________ occurs at any temperature and involves absorbing energy.", a: "evaporation", opt: ["boiling", "melting", "evaporation", "freezing"] },
+        { q: "In the water cycle, water vapour rises and cools to form __________.", a: "clouds", opt: ["rain", "clouds", "oceans", "rivers"] },
+        { q: "Snow and __________ are forms of solid precipitation.", a: "hail", opt: ["rain", "hail", "dew", "fog"] },
+        { q: "Evaporation is faster on a __________ and windy day.", a: "hot", opt: ["cold", "wet", "rainy", "hot"] },
+        { q: "Condensation __________ energy (heat).", a: "releases", opt: ["absorbs", "releases", "creates", "destroys"] },
+        { q: "Water in seas and rivers absorbs energy from the __________.", a: "sun", opt: ["moon", "earth", "wind", "sun"] },
+        
+        // 2.2 Dissolving
+        { q: "A __________ is a mixture of solute and solvent.", a: "solution", opt: ["mixture", "solution", "suspension", "liquid"] },
+        { q: "In salt water, the salt is the __________.", a: "solute", opt: ["solvent", "solution", "solute", "residue"] },
+        { q: "Water is known as a __________ solvent because it dissolves many substances.", a: "universal", opt: ["weak", "universal", "poor", "solid"] },
+        { q: "Substances like sugar are __________ in water.", a: "soluble", opt: ["insoluble", "hard", "soluble", "resistant"] },
+        { q: "Sand is __________ in water.", a: "insoluble", opt: ["soluble", "melted", "insoluble", "dissolved"] },
+        { q: "Crushing a solid __________ its surface area.", a: "increases", opt: ["decreases", "increases", "removes", "destroys"] },
+        { q: "Stirring a solution __________ the dissolving rate.", a: "increases", opt: ["decreases", "stops", "increases", "slows"] },
+        { q: "The __________ of a substance tells us how much of it can dissolve in a specific amount of solvent.", a: "solubility", opt: ["density", "volume", "solubility", "mass"] },
+        { q: "A solution that cannot dissolve any more solute is called __________.", a: "saturated", opt: ["unsaturated", "saturated", "dilute", "pure"] },
+
+        // 2.3 Water Purification
+        { q: "Sedimentation removes __________ impurities that are heavy.", a: "insoluble", opt: ["soluble", "insoluble", "invisible", "chemical"] },
+        { q: "During filtration, the liquid that passes through is called the __________.", a: "filtrate", opt: ["residue", "filtrate", "sediment", "distillate"] },
+        { q: "The solid trapped on the filter paper is called the __________.", a: "residue", opt: ["filtrate", "residue", "solution", "product"] },
+        { q: "Distillation involves boiling followed by __________.", a: "condensation", opt: ["evaporation", "freezing", "condensation", "melting"] },
+        { q: "Distillation removes __________ impurities and microorganisms.", a: "soluble", opt: ["insoluble", "large", "soluble", "heavy"] },
+        { q: "__________ water is free from dissolved minerals and bacteria.", a: "distilled", opt: ["tap", "river", "distilled", "sea"] },
+        
+        // 2.4 Further Treatment
+        { q: "__________ is added to swimming pools to kill bacteria.", a: "chlorine", opt: ["fluoride", "chlorine", "salt", "sugar"] },
+        { q: "__________ is an alternative to chlorine that does not leave a smell.", a: "ozone", opt: ["fluoride", "alum", "ozone", "nitrogen"] },
+        { q: "UV light is used to kill __________ in water.", a: "microorganisms", opt: ["chemicals", "dust", "microorganisms", "minerals"] },
+        { q: "Adding __________ to water helps prevent tooth decay.", a: "fluoride", opt: ["calcium", "chloride", "fluoride", "iron"] },
+
+        // 2.6 Conservation & Pollution
+        { q: "About __________% of the Earth's surface is covered by water.", a: "70", opt: ["50", "70", "90", "30"] },
+        { q: "Only about __________% of water on Earth is fresh water.", a: "2.5", opt: ["50", "10", "2.5", "0.1"] },
+        { q: "We can save water by using a washing machine with a Grade __________ efficiency label.", a: "1", opt: ["1", "5", "3", "10"] },
+        { q: "Too much fertiliser in water can cause an __________ bloom.", a: "algal", opt: ["fish", "algal", "ocean", "oil"] },
+        { q: "Red tides are caused by the rapid growth of __________.", a: "algae", opt: ["bacteria", "fish", "coral", "algae"] },
+        { q: "Oil spills prevent __________ from dissolving in seawater, suffocating fish.", a: "oxygen", opt: ["salt", "oxygen", "nitrogen", "food"] }
+    ];
+
+    // App State
+    let currentMode = 'mc'; 
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let shuffledQuestions = [];
+    let isAnswered = false; // Prevent double clicking
+
+    function startGame(mode) {
+        currentMode = mode;
+        score = 0;
+        currentQuestionIndex = 0;
+        isAnswered = false;
+
+        // Shuffle questions
+        shuffledQuestions = [...questionBank].sort(() => Math.random() - 0.5);
+
+        // Switch Screens (Hide all, show quiz)
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('quiz-screen').classList.add('active');
+
+        // Setup Input UI if needed
+        const inputContainer = document.getElementById('input-container');
+        const optionsGrid = document.getElementById('options-grid');
+        
+        if (mode === 'input') {
+            inputContainer.style.display = 'block';
+            optionsGrid.style.display = 'none';
+            
+            // Listen for Enter key
+            document.getElementById('answer-input').addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    checkInputAnswer();
+                }
+            });
+        } else {
+            inputContainer.style.display = 'none';
+            optionsGrid.style.display = 'grid';
+        }
+
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        isAnswered = false;
+        const qData = shuffledQuestions[currentQuestionIndex];
+        
+        // Update Text & Number
+        document.getElementById('question-box').innerText = qData.q;
+        document.getElementById('q-num').innerText = currentQuestionIndex + 1;
+        
+        // Reset Feedback
+        const feedbackMsg = document.getElementById('feedback-msg');
+        feedbackMsg.innerText = "";
+        feedbackMsg.style.color = "inherit";
+        feedbackMsg.style.background = "transparent";
+        document.getElementById('next-btn').style.display = "none";
+
+        // Update Progress Bar
+        const percent = (currentQuestionIndex / shuffledQuestions.length) * 100;
+        document.getElementById('progress-bar').style.width = `${percent}%`;
+
+        if (currentMode === 'mc') {
+            // Setup MC Buttons
+            const grid = document.getElementById('options-grid');
+            grid.innerHTML = '';
+            
+            // Shuffle options
+            let options = [...qData.opt].sort(() => Math.random() - 0.5);
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.innerText = opt;
+                btn.onclick = () => checkMCAnswer(opt, btn);
+                grid.appendChild(btn);
+            });
+        } else {
+            // Reset Input
+            const input = document.getElementById('answer-input');
+            input.value = '';
+            input.disabled = false;
+            input.style.borderColor = "#ced4da";
+            input.style.backgroundColor = "white";
+            input.focus();
+        }
+    }
+
+    function checkMCAnswer(selected, btnElement) {
+        if (isAnswered) return;
+        isAnswered = true;
+
+        const qData = shuffledQuestions[currentQuestionIndex];
+        const buttons = document.querySelectorAll('.btn-option');
+        
+        if (selected.toLowerCase() === qData.a.toLowerCase()) {
+            score++;
+            btnElement.classList.add('correct');
+            showFeedback(true, "Correct! Great job.");
+        } else {
+            btnElement.classList.add('incorrect');
+            // Show correct answer
+            buttons.forEach(b => {
+                if (b.innerText.toLowerCase() === qData.a.toLowerCase()) {
+                    b.classList.add('correct');
+                }
+            });
+            showFeedback(false, `Oops! The correct answer is: ${qData.a}`);
+        }
+
+        // Disable all buttons
+        buttons.forEach(b => b.disabled = true);
+        document.getElementById('next-btn').style.display = 'inline-block';
+    }
+
+    function checkInputAnswer() {
+        if (isAnswered) return;
+        
+        const input = document.getElementById('answer-input');
+        const userVal = input.value.trim();
+        if (!userVal) return; // Don't submit empty
+
+        isAnswered = true;
+        input.disabled = true;
+        const qData = shuffledQuestions[currentQuestionIndex];
+
+        if (userVal.toLowerCase() === qData.a.toLowerCase()) {
+            score++;
+            input.style.borderColor = "var(--success)";
+            input.style.backgroundColor = "#e8f8f5"; // light green
+            showFeedback(true, "Spelled correctly! Well done.");
+        } else {
+            input.style.borderColor = "var(--error)";
+            input.style.backgroundColor = "#fdedec"; // light red
+            showFeedback(false, `Incorrect. The answer is: ${qData.a}`);
+        }
+        document.getElementById('next-btn').style.display = 'inline-block';
+    }
+
+    function showFeedback(isCorrect, text) {
+        const fb = document.getElementById('feedback-msg');
+        fb.innerText = text;
+        fb.style.color = isCorrect ? "var(--success)" : "var(--error)";
+        // fb.style.backgroundColor = isCorrect ? "#e8f8f5" : "#fdedec";
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < shuffledQuestions.length) {
+            renderQuestion();
+        } else {
+            endGame();
+        }
+    }
+
+    function endGame() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('end-screen').classList.add('active');
+        document.getElementById('progress-bar').style.width = `100%`;
+
+        document.getElementById('final-score').innerText = score;
+        
+        const total = shuffledQuestions.length;
+        const percent = (score / total) * 100;
+        
+        let msg = "Nice Try!";
+        let details = `You scored ${score} out of ${total}.`;
+
+        if (percent === 100) {
+            msg = "🌟 Perfection! 🌟";
+            details = "You answered every single question correctly!";
+        } else if (percent >= 80) {
+            msg = "Awesome Job! 🌊";
+            details = `You missed only ${total - score} questions. Very strong knowledge!`;
+        } else if (percent >= 50) {
+            msg = "Good Effort! 📘";
+            details = "You passed, but you might want to review the harder questions.";
+        } else {
+            msg = "Keep Practicing! 💪";
+            details = "Don't give up. Review your notes and try again!";
+        }
+
+        document.getElementById('final-message').innerText = msg;
+        document.getElementById('final-details').innerText = details;
+    }
+
+    function goToMenu() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('start-screen').classList.add('active');
+        document.getElementById('progress-bar').style.width = '0%';
+    }
+
+    function restartGame() {
+        startGame(currentMode);
+    }
+</script>
+
+</body>
+</html>
